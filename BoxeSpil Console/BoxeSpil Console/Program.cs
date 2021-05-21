@@ -4,7 +4,8 @@ namespace BoxeSpil_Console
 {
     class Program
     {
-        static Gamecontroller gamecontroller = new Gamecontroller();
+        static int runderMaxAntal = 0;
+        static int rundeAktuelle = 0;
         static Boxer player1 = new Boxer();
         static Boxer player2 = new Boxer();
         static Random rnd = new Random();
@@ -16,13 +17,13 @@ namespace BoxeSpil_Console
 
             Console.WriteLine("Will you be playing with a friend tonight, or shall i find a volunteer? (y/n - n is default)");
             players = Console.ReadLine();
-            Console.WriteLine("What is your name?");
+            Console.WriteLine("What is your name? (Atleast 3 characters)");  
             player1.name = StringMinLengthChecker(Console.ReadLine());
 
             // Player 2 or NPC
             if(players == "y")
             {
-                Console.WriteLine("What is the name of your opponent?");
+                Console.WriteLine("What is the name of your opponent? (Atleast 3 characters)");
                 player2.name = StringMinLengthChecker(Console.ReadLine());
             }
             else
@@ -32,22 +33,22 @@ namespace BoxeSpil_Console
 
             // Moves pr. round
             Console.WriteLine("how many rounds will you be doing tonight? (1-13)");
-            gamecontroller.runderMaxAntal = StringToIntChecker(Console.ReadLine());
+            runderMaxAntal = StringToIntChecker(Console.ReadLine());
 
 
             // Random storytext & info
             Console.WriteLine($"\nWelcome to the boxing match of the year, here tonight we present to you the most brutal fight you'll ever see\n" +
                 $"in the right corner we have {player1.name} who is undefeated for the last 3 seasons. \n" +
                 $"and in the left corner we have our challenger who's *ahem*........ {player2.name} who thinks he can take down our champion");
-            Console.WriteLine("(there's 2 kind of attacks og 1 defend, also player 1 has a power move.) \n1 = Jab \n2 = Hook \n3 = Defend\n");
+            Console.WriteLine("(there's 2 kind of attacks og 1 defend, also player 1 has a power move.) \n1 = Jab \n2 = Hook \n3 = Defend \n4 = Uppercut (unlimited power) \n");
 
             // Fighting
             int i = 1;
             while(i <= 3 && earlyEnding == false)
             {
                 Console.WriteLine($"--------------------------- round {i} start! ---------------------------");
-                gamecontroller.rundeAktuelle = 1;
-                while (gamecontroller.rundeAktuelle <= gamecontroller.runderMaxAntal && earlyEnding == false)
+                rundeAktuelle = 1;
+                while (rundeAktuelle <= runderMaxAntal && earlyEnding == false)
                 {
                     Console.WriteLine($"\nit's {player1.name}'s turn to pull the punch.. what will his next move be?");
                     player1.move = StringToIntChecker(Console.ReadLine(),1);
@@ -78,23 +79,23 @@ namespace BoxeSpil_Console
 
                     // Fall check & get-back-up check on both 
                     player1.fallroll();
-                    earlyEnding = gamecontroller.CheckWinner(player1, player2);
+                    earlyEnding = CheckWinner(player1, player2);
                     if(earlyEnding == false)
                     {
                         player2.fallroll();
-                        earlyEnding = gamecontroller.CheckWinner(player1, player2);
+                        earlyEnding = CheckWinner(player1, player2);
                     }
 
-                    gamecontroller.rundeAktuelle++;
+                    rundeAktuelle++;
                 }
                 if(earlyEnding == false)
                 {
                     Console.WriteLine($"\n--------------------------- end of round {i} ---------------------------");
                     
                     // checks for early ending and if all rounds were played out
-                    if (i == 3 && gamecontroller.rundeAktuelle == gamecontroller.runderMaxAntal+1)
+                    if (i == 3 && rundeAktuelle == runderMaxAntal+1)
                     {
-                        gamecontroller.GameEnd(player1, player2);
+                        GameEnd(player1, player2);
                         break;
                     }
 
@@ -127,17 +128,17 @@ namespace BoxeSpil_Console
             }
             catch
             {
-                Console.WriteLine("please insert a number");
-                StringToIntChecker(Console.ReadLine());
+                Console.WriteLine("please insert a valid number");
+                output = StringToIntChecker(Console.ReadLine());
             }
             if (output <= 0 || output > 13)
             {
-                Console.WriteLine("please insert a valid number");
-                StringToIntChecker(Console.ReadLine());
+                Console.WriteLine("We won't stay here all night, please insert an other number");
+                output = StringToIntChecker(Console.ReadLine());
             } else if(inputType == 1 && output >= 5)
             {
                 Console.WriteLine("please insert a valid number");
-                StringToIntChecker(Console.ReadLine(), inputType);
+                output = StringToIntChecker(Console.ReadLine(), inputType);
             }
             return output;
         }
@@ -162,6 +163,38 @@ namespace BoxeSpil_Console
         {
             Console.WriteLine($"{PMover.name} landed a {PMover.actionMove()}");
             PReciever.stagging -= PMover.staggerpunch;
+        }
+
+        static bool CheckWinner(Boxer p1, Boxer p2)
+        {
+            if (p1.stagging <= 0)
+            {
+                Winner(p2);
+                return true;
+            }
+            else if (p2.stagging <= 0)
+            {
+                Winner(p1);
+                return true;
+            }
+            return false;
+        }
+
+        static void GameEnd(Boxer p1, Boxer p2)
+        {
+            if (p1.stagging < p2.stagging)
+            {
+                Winner(p2);
+            }
+            else
+            {
+                Winner(p1);
+            }
+        }
+
+        static void Winner(Boxer winPlayer)
+        {
+            Console.WriteLine($"--------------------------- {winPlayer.name} has won!! ---------------------------");
         }
     }
 }
