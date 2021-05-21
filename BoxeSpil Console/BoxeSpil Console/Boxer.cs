@@ -6,12 +6,17 @@ namespace BoxeSpil_Console
 {
     class Boxer
     {
+        int fighterNumber = 0;
         public string name { get;  set; }
         public int stagging = 1000;
         public int staggerpunch = 0;
         Random rnd = new Random();
         public int move { get; set; }
 
+        public Boxer()
+        {
+            fighterNumber++;
+        }
 
         public string actionMove()
         {
@@ -23,7 +28,7 @@ namespace BoxeSpil_Console
                     staggerpunch = rnd.Next(20, 30);
                     break;
                 case 2:
-                    attack = "upperpunch, that must have hurt";
+                    attack = "right hook, that must have hurt";
                     staggerpunch = rnd.Next(10, 60);
                     break;
                 case 3:
@@ -32,8 +37,8 @@ namespace BoxeSpil_Console
                     staggerpunch = 0;
                     break;
                 case 4:
-                    attack = "bitchslap, the humiliation!!";
-                    staggerpunch = 1000;
+                    attack = "Uppercut, the humiliation!!";
+                    staggerpunch = 400;
                     break;
             }
             return attack;
@@ -45,7 +50,7 @@ namespace BoxeSpil_Console
             if(stagging <= fallroll)
             {
                 Console.WriteLine($"{name} has fallen, will he get back up?");
-                if(stagging <= rnd.Next(200, 1000))
+                if(stagging <= rnd.Next(50, 950))
                 {
                     Console.WriteLine($"{name} can't get up!!");
                     stagging = 0;
@@ -56,6 +61,7 @@ namespace BoxeSpil_Console
             }
 
         }
+
 
        
     }

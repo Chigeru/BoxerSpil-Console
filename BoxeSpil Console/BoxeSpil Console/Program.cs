@@ -4,16 +4,17 @@ namespace BoxeSpil_Console
 {
     class Program
     {
+        static Gamecontroller gamecontroller = new Gamecontroller();
+        static Boxer player1 = new Boxer();
+        static Boxer player2 = new Boxer();
+        static Random rnd = new Random();
+        static string players;
         static void Main(string[] args)
         {
-            Gamecontroller gamecontroller = new Gamecontroller();
-            Boxer player1 = new Boxer();
-            Boxer player2 = new Boxer();
-            Random rnd = new Random();
-            string players;
+            
             bool earlyEnding = false;
 
-            Console.WriteLine("Will you be playing with a friend tonight, or shall i find a volunteer? (y/n)");
+            Console.WriteLine("Will you be playing with a friend tonight, or shall i find a volunteer? (y/n - n is default)");
             players = Console.ReadLine();
             Console.WriteLine("What is your name?");
             player1.name = StringMinLengthChecker(Console.ReadLine());
@@ -30,15 +31,15 @@ namespace BoxeSpil_Console
             }
 
             // Moves pr. round
-            Console.WriteLine("how many rounds will you be doing tonight?");
+            Console.WriteLine("how many rounds will you be doing tonight? (1-13)");
             gamecontroller.runderMaxAntal = StringToIntChecker(Console.ReadLine());
 
 
             // Random storytext & info
             Console.WriteLine($"\nWelcome to the boxing match of the year, here tonight we present to you the most brutal fight you'll ever see\n" +
                 $"in the right corner we have {player1.name} who is undefeated for the last 3 seasons. \n" +
-                $"and in the left corner we have our challenger who's *ahem*........ {player2.name} who thinks he \ncan take down our champion");
-            Console.WriteLine("(there's 2 kind of attacks og 1 defend.) \n1 = jab \n2 = uppercut \n3 = defend\n");
+                $"and in the left corner we have our challenger who's *ahem*........ {player2.name} who thinks he can take down our champion");
+            Console.WriteLine("(there's 2 kind of attacks og 1 defend, also player 1 has a power move.) \n1 = Jab \n2 = Hook \n3 = Defend\n");
 
             // Fighting
             int i = 1;
@@ -49,17 +50,19 @@ namespace BoxeSpil_Console
                 while (gamecontroller.rundeAktuelle <= gamecontroller.runderMaxAntal && earlyEnding == false)
                 {
                     Console.WriteLine($"\nit's {player1.name}'s turn to pull the punch.. what will his next move be?");
-                    
-                    player1.move = StringToIntChecker(Console.ReadLine());
+                    player1.move = StringToIntChecker(Console.ReadLine(),1);
+
+
                     if(players == "y")
                     {
                         Console.WriteLine($"\nit's {player2.name}'s turn to pull the punch.. what will his next move be?");
-                        player2.move = StringToIntChecker(Console.ReadLine());
+                        player2.move = StringToIntChecker(Console.ReadLine(),1);
                     } else
                     {
                         player2.move = rnd.Next(1, 4);
                     }
 
+                    // Both players selects moves before executing them, so defending will have an effect 
                     if(player1.move == 3 || player2.move == 3)
                     {
                         moveBlocker();
@@ -69,9 +72,11 @@ namespace BoxeSpil_Console
                         moveAttack(player2, player1);
                     }
 
+                    // Shows stagging informations
                     Console.WriteLine($"{player1.name}: {player1.stagging} - {player1.staggerpunch}");
                     Console.WriteLine($"{player2.name}: {player2.stagging} - {player2.staggerpunch}");
 
+                    // Fall check & get-back-up check on both 
                     player1.fallroll();
                     earlyEnding = gamecontroller.CheckWinner(player1, player2);
                     if(earlyEnding == false)
@@ -79,11 +84,14 @@ namespace BoxeSpil_Console
                         player2.fallroll();
                         earlyEnding = gamecontroller.CheckWinner(player1, player2);
                     }
+
                     gamecontroller.rundeAktuelle++;
                 }
                 if(earlyEnding == false)
                 {
                     Console.WriteLine($"\n--------------------------- end of round {i} ---------------------------");
+                    
+                    // checks for early ending and if all rounds were played out
                     if (i == 3 && gamecontroller.rundeAktuelle == gamecontroller.runderMaxAntal+1)
                     {
                         gamecontroller.GameEnd(player1, player2);
@@ -96,54 +104,64 @@ namespace BoxeSpil_Console
 
             Console.ReadLine();         // Stopper before closing window
 
-            // Metoder
-            string StringMinLengthChecker(String inputString)
+        }
+
+        // String checker & feedback
+        static string StringMinLengthChecker(String inputString)
+        {
+            if (inputString.Length < 3)
             {
-                if(inputString.Length < 3)
-                {
-                    Console.WriteLine("the input name is too short");
-                    StringMinLengthChecker(Console.ReadLine());
-                }
-                return inputString;
+                Console.WriteLine("the input name is too short");
+                StringMinLengthChecker(Console.ReadLine());
             }
+            return inputString;
+        }
 
-            int StringToIntChecker(String inputString)
+        // Conversion check & feedback + input type (default - 0 & move - 1)
+        static int StringToIntChecker(String inputString, int inputType = 0)
+        {
+            int output = 0;
+            try
             {
-                int output = 0;
-                try
-                {
-                    output = Int32.Parse(inputString);
-                }
-                catch
-                {
-                    Console.WriteLine("please insert a number");
-                    StringToIntChecker(Console.ReadLine());
-                }
-                return output;
+                Int32.TryParse(inputString, out output);
             }
-
-            void moveBlocker()
+            catch
             {
-                if(player1.move == 3)
-                {
-                    Console.WriteLine($"{player1.name} {player1.actionMove()} {player2.name}'s attack");
-                    player1.stagging -= player2.staggerpunch;
-                }else
-                {
-                    Console.WriteLine($"{player2.name} {player2.actionMove()} {player1.name}'s attack");
-                    player2.stagging -= player1.staggerpunch;
-                }
+                Console.WriteLine("please insert a number");
+                StringToIntChecker(Console.ReadLine());
             }
-
-            void moveAttack(Boxer PMover, Boxer PReciever)
+            if (output <= 0 || output > 13)
             {
-                Console.WriteLine($"{PMover.name} landed a {PMover.actionMove()}");
-                PReciever.stagging -= PMover.staggerpunch;
+                Console.WriteLine("please insert a valid number");
+                StringToIntChecker(Console.ReadLine());
+            } else if(inputType == 1 && output >= 5)
+            {
+                Console.WriteLine("please insert a valid number");
+                StringToIntChecker(Console.ReadLine(), inputType);
             }
+            return output;
+        }
 
+        // Blocking a move
+        static void moveBlocker()
+        {
+            if (player1.move == 3)
+            {
+                Console.WriteLine($"{player1.name} {player1.actionMove()} {player2.name}'s attack");
+                player1.stagging -= player2.staggerpunch;
+            }
+            else
+            {
+                Console.WriteLine($"{player2.name} {player2.actionMove()} {player1.name}'s attack");
+                player2.stagging -= player1.staggerpunch;
+            }
+        }
 
-
-
+        // Attack move
+        static void moveAttack(Boxer PMover, Boxer PReciever)
+        {
+            Console.WriteLine($"{PMover.name} landed a {PMover.actionMove()}");
+            PReciever.stagging -= PMover.staggerpunch;
         }
     }
 }
